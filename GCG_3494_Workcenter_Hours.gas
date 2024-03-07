@@ -1,0 +1,361 @@
+Program.Sub.ScreenSU.Start
+gui.F_WCHr..create
+gui.F_WCHr..caption("Workcenter Hours")
+gui.F_WCHr..size(4100,2195)
+gui.F_WCHr..position(0,0)
+gui.F_WCHr..event(unload,f_wchr_unload)
+gui.F_WCHr..alwaysontop(False)
+gui.F_WCHr..fontname("Arial")
+gui.F_WCHr..fontsize(8)
+gui.F_WCHr..forecolor(0)
+gui.F_WCHr..fontstyle(,,,,)
+gui.F_WCHr..BackColor(-2147483633)
+gui.F_WCHr..controlbox(True)
+gui.F_WCHr..maxbutton(False)
+gui.F_WCHr..minbutton(False)
+gui.F_WCHr..mousepointer(0)
+gui.F_WCHr..moveable(True)
+gui.F_WCHr..sizeable(False)
+gui.F_WCHr..ShowInTaskBar(True)
+gui.F_WCHr..titlebar(True)
+gui.F_WCHr.lbl_dp1.create(label,"Start Date",True,1800,200,1,100,100,True,0,Arial,8,-2147483633,0)
+gui.F_WCHr.dtpStart.create(datepicker)
+gui.F_WCHr.dtpStart.visible(True)
+gui.F_WCHr.dtpStart.size(1800,345)
+gui.F_WCHr.dtpStart.zorder(0)
+gui.F_WCHr.dtpStart.position(100,300)
+gui.F_WCHr.dtpStart.enabled(True)
+gui.F_WCHr.dtpStart.checkbox(False)
+gui.F_WCHr.lbl_dp2.create(label,"Stop Date",True,1800,200,1,1950,100,True,0,Arial,8,-2147483633,0)
+gui.F_WCHr.dtpStop.create(datepicker)
+gui.F_WCHr.dtpStop.visible(True)
+gui.F_WCHr.dtpStop.size(1800,345)
+gui.F_WCHr.dtpStop.zorder(0)
+gui.F_WCHr.dtpStop.position(1950,300)
+gui.F_WCHr.dtpStop.enabled(True)
+gui.F_WCHr.dtpStop.checkbox(False)
+gui.F_WCHr.lbl_txt1.create(label,"Workcenter",True,1800,200,1,100,745,True,0,Arial,8,-2147483633,0)
+gui.F_WCHr.txtWC.create(textbox,"",True,1800,330,0,100,945,False,0,Arial,8,16777215,1)
+gui.F_WCHr.txtWC.maxLength(6)
+gui.F_WCHr.cmdWCBrows.create(button)
+gui.F_WCHr.cmdWCBrows.caption("^")
+gui.F_WCHr.cmdWCBrows.visible(True)
+gui.F_WCHr.cmdWCBrows.size(330,330)
+gui.F_WCHr.cmdWCBrows.zorder(0)
+gui.F_WCHr.cmdWCBrows.position(1950,945)
+gui.F_WCHr.cmdWCBrows.enabled(True)
+gui.F_WCHr.cmdWCBrows.fontname("Arial")
+gui.F_WCHr.cmdWCBrows.fontsize(8)
+gui.F_WCHr.cmdWCBrows.event(click,cmdwcbrows_click)
+gui.F_WCHr.cmdPrint.create(button)
+gui.F_WCHr.cmdPrint.caption("Ok")
+gui.F_WCHr.cmdPrint.visible(True)
+gui.F_WCHr.cmdPrint.size(1000,360)
+gui.F_WCHr.cmdPrint.zorder(0)
+gui.F_WCHr.cmdPrint.position(100,1325)
+gui.F_WCHr.cmdPrint.enabled(True)
+gui.F_WCHr.cmdPrint.fontname("Arial")
+gui.F_WCHr.cmdPrint.fontsize(8)
+gui.F_WCHr.cmdPrint.event(click,cmdPrint_click)
+gui.F_WCHr.cmdPrint.disableonclick(20)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+
+Variable.Global.bChkOpt.Declare(Boolean,True)
+Variable.UDT.uJob.Define("Job",String)
+Variable.UDT.uJob.Define("Suffix",String)
+Variable.UDT.uJob.Define("Cust",String)
+Variable.UDT.uJob.Define("EstHrs",Float)
+Variable.UDT.uJob.Define("ActHrs",Float)
+Variable.UDT.uJob.Define("HrsYTD",Float)
+Variable.UDT.uJob.Define("HrsRange",Float)
+Variable.uGlobal.uJob.Declare("uJob")
+Variable.Global.sDateRange.Declare(String)
+Variable.Global.sWC.Declare(String)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Coded by: MLA
+'Project Start Date: 3/21/2011
+'Notes:
+'  MakLoc Buildings Inc.
+
+F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+Gui.F_WCHr..Show
+
+Program.Sub.Main.End
+
+program.sub.f_wchr_unload.start
+F.ODBC.Connection!con.Close
+F.Intrinsic.Control.End
+
+program.sub.f_wchr_unload.end
+
+program.sub.cmdwcbrows_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdWCBrows_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.sTitles.Declare(String)
+V.Local.sWidths.Declare(String)
+V.Local.sRet.Declare(String)
+
+V.Local.sSql.Set("Select MACHINE, WC_NAME from V_WORKCENTERS Order BY MACHINE")
+V.Local.sTitles.Set("Workcenter*!*Description")
+V.Local.sWidths.Set("1500*!*5200")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+F.Intrinsic.UI.Browser("Selet Workcenter","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,5000,8000,V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.F_WCHr.txtWC.Text(V.Local.sRet(0))
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdWCBrows_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+program.sub.cmdwcbrows_click.end
+
+program.sub.cmdPrint_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdPrint_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+F.Intrinsic.Control.CallSub(Chkopt)
+
+F.Intrinsic.Control.If(V.Global.bChkOpt,=,True)
+	Gui.F_WCHr..Visible(False)
+	F.Intrinsic.Control.CallSub(Loadudt)
+	F.Intrinsic.Control.CallSub(Loadrst)
+	F.Intrinsic.Control.CallSub(Callbi)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdPrint_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+Function.Intrinsic.Control.EndIf
+program.sub.cmdPrint_click.end
+
+Program.Sub.ChkOpt.Start
+F.Intrinsic.Control.SetErrorHandler("ChkOpt_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+V.Global.bChkOpt.Set(True)
+
+F.Intrinsic.Control.If(V.Screen.F_WCHr!dtpStart.Value,>,V.Screen.F_WCHr!dtpStop.Value)
+	F.Intrinsic.UI.Msgbox("Please select a valid date range!","Invalid Date Range")
+	V.Global.bChkOpt.Set(False)
+	Gui.F_WCHr.dtpStart.SetFocus
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.F_WCHr!txtWC.Text,=,"")
+	F.Intrinsic.UI.Msgbox("Please select a workcenter!","Invalid Workcenter")
+	V.Global.bChkOpt.Set(False)
+	Gui.F_WCHr.cmdPrint.SetFocus
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("ChkOpt_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.ChkOpt.End
+
+Program.Sub.LoadUDT.Start
+F.Intrinsic.Control.SetErrorHandler("LoadUDT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.dStart.Declare(Date)
+V.Local.dStop.Declare(Date)
+V.Local.sRet.Declare(String)
+V.Local.iUB.Declare(Long)
+V.Local.iRet.Declare(Long)
+V.Local.i.Declare(Long)
+V.Local.iYear.Declare(Long)
+
+V.uGlobal.uJob.Redim(-1,-1)
+V.Local.dStart.Set(V.Screen.F_WCHr!dtpStart.Value)
+V.Local.dStop.Set(V.Screen.F_WCHr!dtpStop.Value)
+F.Intrinsic.String.Concat(V.Local.dStart," to ",V.Local.dStop,V.Global.sDateRange)
+V.Global.sWC.Set(V.Screen.F_WCHr!txtWC.Text)
+F.Intrinsic.String.Concat("Select * from V_JOB_DETAIL where DATE_SEQUENCE between '",V.Local.dStart.PervasiveDate,"' and '",V.Local.dStop.PervasiveDate,"' and MACHINE = '",V.Screen.F_WCHr!txtWC.Text,"'",V.Local.sSql)
+F.ODBC.Connection!con.OpenRecordsetRO("rst",V.Local.sSql)
+
+F.Intrinsic.Control.DoUntil(V.ODBC.con!rst.EOF,=,True)
+	F.Intrinsic.Control.If(V.uGlobal.uJob.UBound,=,-1)
+		V.uGlobal.uJob.Redim(0,0)
+		V.uGlobal.uJob!Job.Set(V.ODBC.con!rst.FieldValTrim!JOB)
+		V.uGlobal.uJob!Suffix.Set(V.ODBC.con!rst.FieldValTrim!SUFFIX)
+		V.uGlobal.uJob!HrsRange.Set(V.ODBC.con!rst.FieldValFloat!HOURS_WORKED)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Variable.UDTMultiSeek(V.uGlobal.uJob!Job,V.ODBC.con!rst.FieldValTrim!JOB,V.uGlobal.uJob!Suffix,V.ODBC.con!rst.FieldValTrim!SUFFIX,V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet,=,"")
+			V.Local.iUB.Set(V.uGlobal.uJob.UBound)
+			F.Intrinsic.Math.Add(V.Local.iUB,1,V.Local.iUB)
+			V.uGlobal.uJob.RedimPreserve(V.uGlobal.uJob.LBound,V.Local.iUB)
+			V.uGlobal.uJob(V.Local.iUB)!Job.Set(V.ODBC.con!rst.FieldValTrim!JOB)
+			V.uGlobal.uJob(V.Local.iUB)!Suffix.Set(V.ODBC.con!rst.FieldValTrim!SUFFIX)
+			V.uGlobal.uJob(V.Local.iUB)!HrsRange.Set(V.ODBC.con!rst.FieldValFloat!HOURS_WORKED)
+		F.Intrinsic.Control.Else
+			V.Local.iRet.Set(V.Local.sRet.Long)
+			F.Intrinsic.Math.Add(V.uGlobal.uJob(V.Local.iRet)!HrsRange,V.ODBC.con!rst.FieldValFloat!HOURS_WORKED,V.uGlobal.uJob(V.Local.iRet)!HrsRange)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	F.ODBC.con!rst.MoveNext
+F.Intrinsic.Control.Loop
+F.ODBC.con!rst.Close
+
+V.Local.dStop.Set(V.Local.dStart)
+F.Intrinsic.Date.Year(V.Local.dStop,V.Local.iYear)
+F.Intrinsic.Date.DateSerial(V.Local.iYear,1,1,V.Local.dStart)
+
+F.Intrinsic.Control.For(V.Local.i,V.uGlobal.uJob.LBound,V.uGlobal.uJob.UBound,1)
+	F.Intrinsic.String.Concat("Select HOURS_WORKED from V_JOB_DETAIL where DATE_SEQUENCE between '",V.Local.dStart.PervasiveDate,"' and '",V.Local.dStop.PervasiveDate,"' and MACHINE = '",V.Screen.F_WCHr!txtWC.Text,"' and JOB = '",V.uGlobal.uJob(V.Local.i)!Job,"' and SUFFIX = '",V.uGlobal.uJob(V.Local.i)!Suffix,"'",V.Local.sSql)
+	F.ODBC.Connection!con.OpenRecordsetRO("rst",V.Local.sSql)
+	
+	F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,=,True)
+		V.uGlobal.uJob(V.Local.i)!HrsYTD.Set(0)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.DoUntil(V.ODBC.con!rst.EOF,=,True)
+			F.Intrinsic.Math.Add(V.uGlobal.uJob(V.Local.i)!HrsYTD,V.ODBC.con!rst.FieldValFloat!HOURS_WORKED,V.uGlobal.uJob(V.Local.i)!HrsYTD)
+			F.ODBC.con!rst.MoveNext
+		F.Intrinsic.Control.Loop
+	F.Intrinsic.Control.EndIf
+	F.ODBC.con!rst.Close
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.For(V.Local.i,V.uGlobal.uJob.LBound,V.uGlobal.uJob.UBound,1)
+	F.Intrinsic.String.Concat("Select HOURS_ESTIMATED, HOURS_ACTUAL from V_JOB_OPERATIONS_WC where WORKCENTER = '",V.Screen.F_WCHr!txtWC.Text,"' and JOB = '",V.uGlobal.uJob(V.Local.i)!Job,"' and SUFFIX = '",V.uGlobal.uJob(V.Local.i)!Suffix,"'",V.Local.sSql)
+	F.ODBC.Connection!con.OpenRecordsetRO("rst",V.Local.sSql)
+	
+	F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,<>,True)
+	
+		F.Intrinsic.Control.If(V.ODBC.con!rst.FieldVal!HOURS_ESTIMATED,=,"")
+			V.uGlobal.uJob(V.Local.i)!EstHrs.Set(0)
+		F.Intrinsic.Control.Else
+			V.uGlobal.uJob(v.Local.i)!EstHrs.Set(V.ODBC.con!rst.FieldValFloat!HOURS_ESTIMATED)
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.Control.If(V.ODBC.con!rst.FieldVal!HOURS_ACTUAL,=,"")
+			V.uGlobal.uJob(V.Local.i)!ActHrs.Set(0)
+		F.Intrinsic.Control.Else
+			V.uGlobal.uJob(V.Local.i)!ActHrs.Set(V.ODBC.con!rst.FieldValFloat!HOURS_ACTUAL)
+		F.Intrinsic.Control.EndIf
+		
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.con!rst.Close
+	F.Intrinsic.String.Concat("Select * from V_JOB_HEADER where JOB = '",V.uGlobal.uJob(V.Local.i)!Job,"' and SUFFIX = '",V.uGlobal.uJob(V.Local.i)!Suffix,"'",V.Local.sSql)
+	F.ODBC.Connection!con.OpenRecordsetRO("rst",V.Local.sSql)
+	
+	F.Intrinsic.Control.If(V.ODBC.con!rst.EOF,<>,True)
+		F.Intrinsic.String.Concat("Select NAME_CUSTOMER from V_CUSTOMER_MASTER where CUSTOMER = '",V.ODBC.con!rst.FieldValTrim!CUSTOMER,"'",V.Local.sSql)
+		F.ODBC.Connection!con.OpenRecordsetRO("rstCust",V.Local.sSql)
+		
+		F.Intrinsic.Control.If(V.ODBC.con!rstCust.EOF,<>,True)
+			V.uGlobal.uJob(V.Local.i)!Cust.Set(V.ODBC.con!rstCust.FieldValTrim!NAME_CUSTOMER)
+		F.Intrinsic.Control.EndIf
+		F.ODBC.con!rstCust.Close
+	F.Intrinsic.Control.EndIf
+	F.ODBC.con!rst.Close
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("LoadUDT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.LoadUDT.End
+
+Program.Sub.LoadRST.Start
+F.Intrinsic.Control.SetErrorHandler("LoadRst_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.i.Declare(Long)
+
+
+F.Intrinsic.String.Concat("Delete GCG_3494_BI_WC_Hours where Terminal = '",V.Caller.Terminal,"'",V.Local.sSql)
+F.ODBC.Connection!con.Execute(V.Local.sSql)
+V.Local.sSql.Set("Select * from GCG_3494_BI_WC_Hours")
+F.ODBC.Connection!con.OpenRecordsetRW("rst",V.Local.sSql)
+
+F.Intrinsic.Control.For(V.Local.i,V.uGlobal.uJob.LBound,V.uGlobal.uJob.UBound,1)
+	F.ODBC.con!rst.AddNew
+	F.ODBC.con!rst.Set!Terminal(V.Caller.Terminal)
+	F.ODBC.con!rst.Set!Job(V.uGlobal.uJob(v.Local.i)!Job)
+	F.ODBC.con!rst.Set!Suffix(V.uGlobal.uJob(V.Local.i)!Suffix)
+	F.ODBC.con!rst.Set!Customer(V.uGlobal.uJob(V.Local.i)!Cust)
+	F.ODBC.con!rst.Set!Range_Hours(V.uGlobal.uJob(V.Local.i)!HrsRange)
+	F.ODBC.con!rst.Set!Prior_YTD_Hours(V.uGlobal.uJob(V.Local.i)!HrsYTD)
+	F.ODBC.con!rst.Set!Estimated_Hours(V.uGlobal.uJob(V.Local.i)!EstHrs)
+	F.ODBC.con!rst.Set!Actual_Hours(V.uGlobal.uJob(V.Local.i)!ActHrs)
+	F.ODBC.con!rst.Update
+F.Intrinsic.Control.Next(V.Local.i)
+F.ODBC.con!rst.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("LoadRst_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.LoadRST.End
+
+Program.Sub.CallBI.Start
+F.Intrinsic.Control.SetErrorHandler("CallBI_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.iBI.Declare(Long)
+V.Local.sParam.Declare(String)
+V.Local.sParamVal.Declare(String)
+
+V.Local.sParam.Set("Terminal*!*DateRange*!*Workcenter")
+F.Intrinsic.String.Concat(V.Caller.Terminal,"*!*",V.Global.sDateRange,"*!*",V.Global.sWC,V.Local.sParamVal)
+F.Intrinsic.String.Split(V.Local.sParam,"*!*",V.Local.sParam)
+F.Intrinsic.String.Split(V.Local.sParamVal,"*!*",V.Local.sParamVal)
+F.Global.BI.GetIDFromName("GCG_3494_BI_Workcenter_Hours.rpt",V.Local.iBI)
+F.Global.BI.PrintReport(V.Local.iBI,0,V.Local.sParam,V.Local.sParamVal,"",False)
+F.Intrinsic.Control.CallSub(F_wchr_unload)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("CallBI_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.CallBI.End
+
+Program.Sub.ScreenSS.Start
+SS_Form1{{CAPTION::Workcenter Hours
+SS_Form1.CTRL{{NAME::dp1\\TYPE::6\\CAPTION::Start Date\\GROUP::1\\BROWSER::0
+SS_Form1.CTRL{{NAME::dp2\\TYPE::6\\CAPTION::End Date\\GROUP::1\\BROWSER::0
+SS_Form1.CTRL{{NAME::txt1\\TYPE::2\\CAPTION::Workcenter\\GROUP::-1\\BROWSER::1
+SS_Form1.CTRL{{NAME::cmd1\\TYPE::5\\CAPTION::Ok\\GROUP::-1\\BROWSER::0
+
+Program.Sub.ScreenSS.End
+
